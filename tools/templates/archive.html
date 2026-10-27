@@ -1,0 +1,29 @@
+<header class="page-hero">
+  <div class="container page-hero-inner">
+    <p class="eyebrow">Dal 2013 al 2018</p>
+    <h1>Il diario del Progetto Rebecca</h1>
+    <p class="page-lead">Tutte le storie, gli eventi e le iniziative che hanno accompagnato il progetto. Un archivio da leggere, conservare e tramandare.</p>
+  </div>
+</header>
+
+<section class="section archive-section">
+  <div class="container">
+    <div class="archive-toolbar">
+      <div class="archive-filters" role="group" aria-label="Filtra per anno">
+        ${year_buttons}
+      </div>
+      <div class="archive-search">
+        <label class="sr-only" for="archive-search">Cerca nel diario</label>
+        <input type="search" id="archive-search" placeholder="Cerca una storia…" autocomplete="off">
+      </div>
+    </div>
+    <p class="archive-count" id="archive-count">${count_label}</p>
+    <div class="news-grid" id="archive-grid">
+      ${cards}
+    </div>
+    <div class="archive-more">
+      <button class="btn btn--outline" id="archive-more" type="button">Mostra altre storie</button>
+    </div>
+    <p class="archive-empty" id="archive-empty" hidden>Nessuna storia trovata. Prova un altro anno o un'altra parola.</p>
+  </div>
+</section>

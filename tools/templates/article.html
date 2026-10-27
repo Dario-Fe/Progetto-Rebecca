@@ -1,0 +1,51 @@
+<article class="article-page">
+  <header class="page-hero page-hero--article">
+    <div class="container page-hero-inner">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="/eventi.html">Diario</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">${short_title}</span>
+      </nav>
+      <p class="eyebrow">${date_label}</p>
+      <h1>${title}</h1>
+      ${subtitle_html}
+      ${author_html}
+    </div>
+  </header>
+
+  <div class="container article-layout">
+    <div class="article-body">
+      ${body}
+    </div>
+
+    <aside class="article-sidebar" aria-label="Approfondimenti">
+      <div class="sidebar-card sidebar-card--donate">
+        <span class="sidebar-card-icon" aria-hidden="true">${heart_svg}</span>
+        <h2>Aiuta il progetto</h2>
+        <p>Ogni donazione sostiene i bambini e mantiene vivo il sorriso di Rebecca.</p>
+        <a class="btn btn--primary btn--sm" href="/donare.html">Scopri come donare</a>
+      </div>
+      <div class="sidebar-card">
+        <h2>Altre storie</h2>
+        <ul class="sidebar-list">
+          ${related}
+        </ul>
+        <a class="sidebar-link" href="/eventi.html">Tutto il diario <span aria-hidden="true">→</span></a>
+      </div>
+    </aside>
+  </div>
+
+  ${tags_html}
+
+  <div class="container article-footer">
+    <a class="btn btn--ghost" href="/eventi.html">${arrow_left_svg} Torna al diario</a>
+    <div class="share" aria-label="Condividi questo articolo">
+      <span>Condividi</span>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encoded_url}" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://wa.me/?text=${encoded_title}%20${encoded_url}" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="mailto:?subject=${encoded_title}&amp;body=${encoded_url}">Email</a>
+    </div>
+  </div>
+</article>
