@@ -376,8 +376,7 @@ p {
   margin-top: 0.15rem;
   font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--muted);
 }
 
@@ -981,6 +980,62 @@ p {
   margin: 1.2rem 0 0;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+/* Rimbalzo fotografie ↔ video nella gallery */
+#fotografie,
+#video {
+  scroll-margin-top: 96px;
+}
+
+.eyebrow--split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.section-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid rgba(214, 65, 122, 0.4);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--pink-dark);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.section-jump span {
+  transition: transform 0.2s ease;
+}
+
+.section-jump:hover {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: #fff;
+}
+
+.section-jump:hover span {
+  transform: translateY(2px);
+}
+
+.section-heading--on-dark .section-jump {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.42);
+  color: #fff;
+}
+
+.section-heading--on-dark .section-jump:hover {
+  background: #fff;
+  border-color: #fff;
+  color: var(--pink-dark);
 }
 
 /* --------------------------------------------------------------------------
