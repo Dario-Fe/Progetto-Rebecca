@@ -87,7 +87,7 @@ Ricostruire https://www.progettorebecca.org/ come sito statico moderno, conserva
 - [x] Gallery curata e sezione video.
 - [x] Redirect Netlify, sitemap, robots, privacy.
 - [x] Test locale, responsive e QA di base.
-- [ ] Configurazione repository Git e deploy Netlify/Cloudflare.
+- [x] Configurazione repository Git e deploy Netlify: sito `progettorebecca`, deploy automatico da `main`, URL https://progettorebecca.netlify.app/.
 - [ ] Inserimento codice fiscale 5×1000, se disponibile.
 - [ ] Cutover del dominio `progettorebecca.org`.
 
@@ -121,10 +121,9 @@ python -m http.server 8765         # anteprima su http://127.0.0.1:8765/
 - Screenshot verificati: home, articolo, archivio, gallery, progetti, donare, contatti, chi-siamo.
 
 ## Prossimi passi
-1. Creare repository Git e collegarlo a Netlify o Cloudflare Pages.
-2. Pubblicare una preview e verificare `_redirects` con i vecchi URL.
-3. Recuperare il codice fiscale 5×1000, se l'associazione lo fornisce.
-4. Pianificare il cutover DNS di `progettorebecca.org`.
+1. Verificare `_redirects` con i vecchi URL sulla preview Netlify.
+2. Recuperare il codice fiscale 5×1000, se l'associazione lo fornisce.
+3. Pianificare il cutover DNS di `progettorebecca.org`.
 
 ## Come riprendere
 1. Leggere questo file.
