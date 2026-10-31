@@ -371,7 +371,7 @@ p {
 .brand-text strong {
   display: block;
   font-family: "Amatic SC", var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.6667rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;

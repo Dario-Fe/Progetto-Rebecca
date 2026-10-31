@@ -41,6 +41,7 @@ THUMBS = IMG / "thumbs"
 VIDEO_IMG = IMG / "video"
 DATA = ASSETS / "data"
 TEMPLATES = Path(__file__).resolve().parent / "templates"
+CHICK_SRC = Path(__file__).resolve().parent / "chick-source.jpg"
 OUT_ARTICLES = ROOT / "eventi"
 CONTENT = ROOT / "content"
 
@@ -684,6 +685,7 @@ def download_all_media(articles: list[dict]) -> None:
     if logo_src.exists():
         shutil.copy2(logo_src, IMG / "logo.png")
         make_logo_derivatives(logo_src)
+    make_chick_assets()
 
     # Cover
     covers = [a["id"] for a in articles]
@@ -735,49 +737,81 @@ def download_all_media(articles: list[dict]) -> None:
     )
 
 
-def make_logo_derivatives(logo_src: Path) -> None:
-    logo = Image.open(logo_src).convert("RGBA")
-    # ritaglio del ritratto circolare dal logo (960x327)
-    crop = logo.crop((632, 8, 946, 322)).resize((420, 420), Image.LANCZOS)
-    mask = Image.new("L", crop.size, 0)
-    d = ImageDraw.Draw(mask)
-    d.ellipse((4, 4, crop.width - 4, crop.height - 4), fill=255)
-    crop.putalpha(mask)
-    crop.save(IMG / "rebecca.png")
+def extract_chick(src: Path) -> Image.Image:
+    im = Image.open(src).convert("RGB")
+    w, h = im.size
+    px = im.load()
+    corners = [px[0, 0], px[w - 1, 0], px[0, h - 1], px[w - 1, h - 1]]
+    bg = tuple(sorted(c[i] for c in corners)[len(corners) // 2] for i in range(3))
+    out = Image.new("RGBA", (w, h))
+    op = out.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            dist = math.sqrt((r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2)
+            alpha = max(0.0, min(1.0, (dist - 10) / 26))
+            if 0.0 < alpha < 1.0:
+                r = max(0, min(255, round((r - (1 - alpha) * bg[0]) / alpha)))
+                g = max(0, min(255, round((g - (1 - alpha) * bg[1]) / alpha)))
+                b = max(0, min(255, round((b - (1 - alpha) * bg[2]) / alpha)))
+            op[x, y] = (r, g, b, round(alpha * 255))
+    return out.crop(out.getbbox())
 
-    # pulcino estratto dal logo (header + favicon)
-    bg = (241, 186, 205)
-    chick_crop = logo.convert("RGB").crop((576, 208, 618, 260))
-    chick = Image.new("RGBA", chick_crop.size)
-    src_px = chick_crop.load()
-    out_px = chick.load()
-    for yy in range(chick_crop.height):
-        for xx in range(chick_crop.width):
-            r, g, b = src_px[xx, yy]
-            dist = ((r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2) ** 0.5
-            alpha = max(0.0, min(1.0, (dist - 12) / 26))
-            out_px[xx, yy] = (r, g, b, int(round(alpha * 255)))
-    chick.save(IMG / "brand-chick.png")
 
-    # icone: pulcino su rosa
+def chick_body(chick: Image.Image, ratio: float = 0.815) -> Image.Image:
+    """Testa e corpo senza zampe: resta leggibile anche a 16-32 px."""
+    return chick.crop((0, 0, chick.width, max(1, int(round(chick.height * ratio)))))
+
+
+def make_chick_assets() -> None:
+    if CHICK_SRC.exists():
+        chick = extract_chick(CHICK_SRC)
+    else:
+        logo = Image.open(IMG / "logo.png").convert("RGB")
+        bg = (241, 186, 205)
+        chick_crop = logo.crop((576, 208, 618, 260))
+        chick = Image.new("RGBA", chick_crop.size)
+        src_px = chick_crop.load()
+        out_px = chick.load()
+        for yy in range(chick_crop.height):
+            for xx in range(chick_crop.width):
+                r, g, b = src_px[xx, yy]
+                dist = ((r - bg[0]) ** 2 + (g - bg[1]) ** 2 + (b - bg[2]) ** 2) ** 0.5
+                alpha = max(0.0, min(1.0, (dist - 12) / 26))
+                out_px[xx, yy] = (r, g, b, int(round(alpha * 255)))
+
+    # pulcino intero (con zampe) per il marchio nell'header
+    target_h = 128
+    brand_h = max(1, int(round(target_h / 0.96)))
+    brand_w = max(1, round(chick.width * brand_h / chick.height))
+    brand = Image.new("RGBA", (brand_w, brand_h), (0, 0, 0, 0))
+    inner = chick.resize(
+        (max(1, round(chick.width * target_h / chick.height)), target_h), Image.LANCZOS
+    )
+    brand.alpha_composite(inner, ((brand_w - inner.width) // 2, (brand_h - target_h) // 2))
+    brand.save(IMG / "brand-chick.png", optimize=True, compress_level=9)
+
+    # icona: solo testa e corpo, inquadratura più stretta
+    icon_src = chick_body(chick)
     pink = (214, 65, 122, 255)
 
-    def make_icon(size: int, ratio: float = 0.72) -> Image.Image:
+    def make_icon(size: int, ratio: float = 0.88) -> Image.Image:
         canvas = Image.new("RGBA", (size, size), pink)
         h = max(1, int(round(size * ratio)))
-        w = max(1, int(round(chick.width * h / chick.height)))
-        resized = chick.resize((w, h), Image.LANCZOS)
-        canvas.alpha_composite(resized, ((size - w) // 2, (size - h) // 2))
+        w = max(1, int(round(icon_src.width * h / icon_src.height)))
+        canvas.alpha_composite(
+            icon_src.resize((w, h), Image.LANCZOS), ((size - w) // 2, (size - h) // 2)
+        )
         return canvas
 
-    make_icon(32).save(IMG / "favicon-32.png")
-    make_icon(180).save(IMG / "apple-touch-icon.png")
-    make_icon(192).save(IMG / "favicon-192.png")
+    make_icon(32).save(IMG / "favicon-32.png", optimize=True, compress_level=9)
+    make_icon(180).save(IMG / "apple-touch-icon.png", optimize=True, compress_level=9)
+    make_icon(192).save(IMG / "favicon-192.png", optimize=True, compress_level=9)
 
-    h = 48
-    w = int(round(chick.width * h / chick.height))
+    h = 56
+    w = max(1, int(round(icon_src.width * h / icon_src.height)))
     buf = BytesIO()
-    chick.save(buf, format="PNG")
+    icon_src.resize((w, h), Image.LANCZOS).save(buf, format="PNG", optimize=True)
     b64 = base64.b64encode(buf.getvalue()).decode("ascii")
     fav = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">\n'
@@ -787,6 +821,17 @@ def make_logo_derivatives(logo_src: Path) -> None:
         "</svg>\n"
     )
     (IMG / "favicon.svg").write_text(fav, encoding="utf-8")
+
+
+def make_logo_derivatives(logo_src: Path) -> None:
+    logo = Image.open(logo_src).convert("RGBA")
+    # ritaglio del ritratto circolare dal logo (960x327)
+    crop = logo.crop((632, 8, 946, 322)).resize((420, 420), Image.LANCZOS)
+    mask = Image.new("L", crop.size, 0)
+    d = ImageDraw.Draw(mask)
+    d.ellipse((4, 4, crop.width - 4, crop.height - 4), fill=255)
+    crop.putalpha(mask)
+    crop.save(IMG / "rebecca.png")
 
     # pattern decorativo leggerissimo
     pattern = '''<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
@@ -802,7 +847,7 @@ def make_logo_derivatives(logo_src: Path) -> None:
 # HTML helpers
 # ---------------------------------------------------------------------------
 HEART_SVG = '''<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 21.35 10.55 20C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"/></svg>'''
-CHICK_IMG = '''<img src="/assets/img/brand-chick.png" alt="" width="19" height="24">'''
+CHICK_IMG = '''<img src="/assets/img/brand-chick.png?v=20261031f" alt="" width="20" height="24">'''
 ARROW_UP_SVG = '''<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>'''
 ARROW_LEFT_SVG = '''<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>'''
 PLAY_SVG = '''<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72c0 .8.87 1.3 1.55.9l10.8-6.86a1.05 1.05 0 0 0 0-1.8L9.55 4.24A1.05 1.05 0 0 0 8 5.14Z"/></svg>'''

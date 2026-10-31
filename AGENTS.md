@@ -110,6 +110,7 @@ python -m http.server 8765         # anteprima su http://127.0.0.1:8765/
 - La gallery usa una selezione automatica: non è l'elenco completo delle foto, che resta nei singoli articoli.
 - Le cover quasi uniformi vengono sostituite automaticamente con un'immagine dell'articolo o un poster video.
 - Il logo usa un ritaglio del ritratto originale (`rebecca.png`), non un'immagine separata.
+- Il pulcino dell'header e le favicon si generano da `tools/chick-source.jpg` (immagine ad alta risoluzione): le icone usano solo testa e corpo, senza zampe, per restare leggibili a 16–32 px.
 
 ## QA eseguita
 - `python tools/check_links.py`: 152 file HTML, nessun link locale mancante.
